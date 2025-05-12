@@ -24,10 +24,12 @@ const addBookHandler = (request, h) => {
 
   const id = nanoid(16);
   const insertedAt = new Date().toISOString();
-  const updateAt = insertedAt;
+  const updatedAt = insertedAt;
+  const finished = pageCount === readPage;
+  const readingBool = reading === true || reading === '1' || reading === 1;
 
   const newBook = {
-    id, name, year, author, summary, publisher, pageCount, readPage, reading, insertedAt, updateAt
+    id, name, year, author, summary, publisher, pageCount, readPage, finished, reading: readingBool, insertedAt, updatedAt
   };
 
   books.push(newBook);
@@ -54,6 +56,27 @@ const addBookHandler = (request, h) => {
 };
 
 const getAllBooksHandler = (request, h) => {
+  const { name, reading, finished } = request.query;
+  let filteredBooks = books;
+
+  if (name !== undefined) {
+    filteredBooks = filteredBooks.filter((book) =>
+      book.name.toLowerCase().includes(name.toLowerCase())
+    );
+  }
+
+  if (reading !== undefined) {
+    filteredBooks = filteredBooks.filter((book) =>
+      book.reading === !!Number(reading)
+    );
+  }
+
+  if (finished !== undefined) {
+    // eslint-disable-next-line no-unused-vars
+    filteredBooks = filteredBooks.filter((book) =>
+      (book.readPage === book.pageCount) === !!Number(finished)
+    );
+  }
 
   const response = h.response({
     status: 'success',
@@ -97,7 +120,9 @@ const editBookByIdHandler = (request, h) => {
   const { id } = request.params;
 
   const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload;
-  const updateAt = new Date().toISOString();
+  const updatedAt = new Date().toISOString();
+  const finished = pageCount === readPage;
+  const readingBool = reading === true || reading === '1' || reading === 1;
 
   if (!name){
     const response = h.response({
@@ -129,13 +154,14 @@ const editBookByIdHandler = (request, h) => {
       publisher,
       pageCount,
       readPage,
-      reading,
-      updateAt,
+      finished,
+      reading: readingBool,
+      updatedAt,
     };
 
     const response = h.response({
-      status: 'succes',
-      massage: 'Buku berhasil diperbarui',
+      status: 'success',
+      message: 'Buku berhasil diperbarui',
     });
     response.code(200);
     return response;
@@ -158,7 +184,7 @@ const deleteBookByIdHandler = (request, h) => {
     books.splice(index, 1);
     const response = h.response({
       status: 'success',
-      massage: 'Buku berhasil dihapus',
+      message: 'Buku berhasil dihapus',
     });
     response.code(200);
     return response;
