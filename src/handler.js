@@ -72,7 +72,6 @@ const getAllBooksHandler = (request, h) => {
   }
 
   if (finished !== undefined) {
-    // eslint-disable-next-line no-unused-vars
     filteredBooks = filteredBooks.filter((book) =>
       (book.readPage === book.pageCount) === !!Number(finished)
     );
